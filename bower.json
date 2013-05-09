@@ -1,5 +1,5 @@
 {
-  "name": "bower-ajax-nav",
+  "name": "AjaxNav",
   "version": "0.0.0",
   "main": ["dist/AjaxNav.js"],
   "dependencies": {
