@@ -67,8 +67,7 @@
 
         return new Request.JSON({
           onRequest: function() {
-            window.scrollTo(0, 0);
-            return _this.content.addClass('fade');
+            return window.scrollTo(0, 0);
           },
           onSuccess: function(json) {
             if (json.html != null) {

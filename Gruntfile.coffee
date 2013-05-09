@@ -88,7 +88,7 @@ module.exports = (grunt) =>
 					name: "AjaxNav"
 					out: "dist/AjaxNav.js"
 					baseUrl: "src"
-					exclude: ['EventEmitter']
+					exclude: ['EventEmitter','mootools']
 					paths:{
 						'domReady' : '../components/requirejs-domready/domReady'
 						'AjaxNav': '../src/AjaxNav'
