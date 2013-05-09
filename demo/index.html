@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Ajax Nav Demo</title>
+	<link rel="stylesheet" href="../dist/twitter.css">
+	<script data-main="main" src="../components/requirejs/require.js"></script>
+	<script>
+		requirejs.config({
+			baseUrl: "",
+			config:{
+
+			},
+			paths:{
+				'domReady' : '../components/requirejs-domready/domReady',
+				'AjaxNav' : '../src/AjaxNav',
+				'EventEmitter': '../components/EventEmitter/dist/EventEmitter'
+			}
+		});
+	</script>
+</head>
+<body>
+	<h1>AjaxNav</h1>
+</body>
+</html>
