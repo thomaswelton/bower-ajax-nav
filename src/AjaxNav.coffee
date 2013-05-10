@@ -37,9 +37,11 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		getXHR: () =>
 			new Request.JSON
 				onRequest: () =>
-					window.scrollTo 0, 0
+					document.body.style.cursor = "wait"
 					
 				onSuccess: (json) =>
+					document.body.style.cursor = ""
+
 					if json.html?
 						@changeState json
 						window.history.pushState json, json.title, json.url
