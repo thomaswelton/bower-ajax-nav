@@ -67,13 +67,13 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				cb() if typeof cb is 'function'
 
 		removePageStyles: (state) =>
-			for href in state.stylesheets
+			if state.stylesheets? then for href in state.stylesheets
 				console.log 'removing stylesheet', "link[href*='#{href}']"
 
 				$$("link[href*='#{href}']").destroy()
 
 		loadScripts: (state, cb) =>
-			if state.scripts.length > 0
+			if state.scripts? and state.scripts.length > 0
 				requirejs state.scripts, () =>
 					cb()
 			else
@@ -83,7 +83,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		loadContent: (state) =>
 			## Inject the stylesheets and HTML that may contain <script> dependencies
 			## Set the new active state
-			for href in state.stylesheets
+			if state.stylesheets? then for href in state.stylesheets
 				stylesheet = document.createElement 'link'
 				stylesheet.setAttribute 'rel', 'stylesheet'
 				stylesheet.setAttribute 'type', "text/css"
