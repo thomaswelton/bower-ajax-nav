@@ -51,6 +51,9 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			@changeState event.state
 
 		onClick: (event) =>
+			## Exclude clicks that open in a new window, tab or trigger a download
+			return if event.shift or event.alt or event.meta
+
 			event.preventDefault()
 
 			if event.target.tagName is 'A'
