@@ -68,9 +68,10 @@
 
         return new Request.JSON({
           onRequest: function() {
-            return window.scrollTo(0, 0);
+            return document.body.style.cursor = "wait";
           },
           onSuccess: function(json) {
+            document.body.style.cursor = "";
             if (json.html != null) {
               _this.changeState(json);
               return window.history.pushState(json, json.title, json.url);
@@ -87,6 +88,9 @@
       AjaxNav.prototype.onClick = function(event) {
         var href;
 
+        if (event.shift || event.alt || event.meta) {
+          return;
+        }
         event.preventDefault();
         if (event.target.tagName === 'A') {
           href = event.target.href;
@@ -116,20 +120,22 @@
       AjaxNav.prototype.removePageStyles = function(state) {
         var href, _i, _len, _ref, _results;
 
-        _ref = state.stylesheets;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          href = _ref[_i];
-          console.log('removing stylesheet', "link[href*='" + href + "']");
-          _results.push($$("link[href*='" + href + "']").destroy());
+        if (state.stylesheets != null) {
+          _ref = state.stylesheets;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            href = _ref[_i];
+            console.log('removing stylesheet', "link[href*='" + href + "']");
+            _results.push($$("link[href*='" + href + "']").destroy());
+          }
+          return _results;
         }
-        return _results;
       };
 
       AjaxNav.prototype.loadScripts = function(state, cb) {
         var _this = this;
 
-        if (state.scripts.length > 0) {
+        if ((state.scripts != null) && state.scripts.length > 0) {
           return requirejs(state.scripts, function() {
             return cb();
           });
@@ -141,15 +147,17 @@
       AjaxNav.prototype.loadContent = function(state) {
         var head, href, stylesheet, _i, _len, _ref;
 
-        _ref = state.stylesheets;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          href = _ref[_i];
-          stylesheet = document.createElement('link');
-          stylesheet.setAttribute('rel', 'stylesheet');
-          stylesheet.setAttribute('type', "text/css");
-          stylesheet.setAttribute('href', href);
-          head = document.getElementsByTagName('head')[0];
-          head.appendChild(stylesheet);
+        if (state.stylesheets != null) {
+          _ref = state.stylesheets;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            href = _ref[_i];
+            stylesheet = document.createElement('link');
+            stylesheet.setAttribute('rel', 'stylesheet');
+            stylesheet.setAttribute('type', "text/css");
+            stylesheet.setAttribute('href', href);
+            head = document.getElementsByTagName('head')[0];
+            head.appendChild(stylesheet);
+          }
         }
         this.content.set('html', state.html);
         this.activeState = state;
