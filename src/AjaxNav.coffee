@@ -30,6 +30,9 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				window.addEventListener "popstate", @onPop
 
 				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", (event) ->
+					## Exclude clicks that open in a new window, tab or trigger a download
+					return if event.shift or event.alt or event.meta
+					
 					event.preventDefault()
 					_this.loadPage this.href
 
@@ -48,7 +51,6 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		onPop: (event) =>
 			@fireEvent 'onPopState'
 			@changeState event.state
-
 
 		unloadRequireScripts: (cb) =>
 			## Unload any active scripts that may be running stuff like setIntervals

@@ -1,11 +1,10 @@
-
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  define('AjaxNav',['EventEmitter', 'mootools'], function(EventEmitter) {
+  define(['EventEmitter', 'mootools'], function(EventEmitter) {
     var AjaxNav, ajaxNav;
 
     AjaxNav = (function(_super) {
@@ -15,10 +14,10 @@
         this.loadPage = __bind(this.loadPage, this);
         this.changeState = __bind(this.changeState, this);
         this.loadContent = __bind(this.loadContent, this);
-        this.injectStylesheet = __bind(this.injectStylesheet, this);
         this.loadScripts = __bind(this.loadScripts, this);
         this.removePageStyles = __bind(this.removePageStyles, this);
         this.unloadRequireScripts = __bind(this.unloadRequireScripts, this);
+        this.onClick = __bind(this.onClick, this);
         this.onPop = __bind(this.onPop, this);
         this.getXHR = __bind(this.getXHR, this);
         var _this = this;
@@ -29,10 +28,25 @@
         }
         this.content = document.getElementById('main');
         this.xhr = this.getXHR();
-        this.head = document.getElementsByTagName('head')[0];
         requirejs(['global'], function(global) {
           var origin;
 
+          console.log(global);
+          requirejs(global.requireScripts, function() {
+            var module, modules, _i, _len, _results;
+
+            modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            _results = [];
+            for (_i = 0, _len = modules.length; _i < _len; _i++) {
+              module = modules[_i];
+              if ((module != null) && typeof module.load === 'function') {
+                _results.push(module.load());
+              } else {
+                _results.push(void 0);
+              }
+            }
+            return _results;
+          });
           _this.defaultState = {
             title: document.title,
             html: _this.content.innerHTML,
@@ -43,15 +57,8 @@
           };
           _this.activeState = _this.defaultState;
           origin = window.location.origin;
-          _this = _this;
-          window.addEventListener("popstate", _this.onPop);
-          return document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", function(event) {
-            if (event.shift || event.alt || event.meta) {
-              return;
-            }
-            event.preventDefault();
-            return _this.loadPage(this.href);
-          });
+          document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", _this.onClick);
+          return window.addEventListener("popstate", _this.onPop);
         });
       }
 
@@ -77,32 +84,36 @@
         return this.changeState(event.state);
       };
 
-      AjaxNav.prototype.unloadRequireScripts = function(cb) {
-        var onUnloadError, onUnloadSuccess;
+      AjaxNav.prototype.onClick = function(event) {
+        var href;
 
-        onUnloadSuccess = function() {
-          var module, modules, _i, _len, _results;
+        if (event.shift || event.alt || event.meta) {
+          return;
+        }
+        event.preventDefault();
+        if (event.target.tagName === 'A') {
+          href = event.target.href;
+        } else {
+          href = event.target.getParent('a').href;
+        }
+        return this.loadPage(href);
+      };
+
+      AjaxNav.prototype.unloadRequireScripts = function(cb) {
+        return requirejs(this.activeState.requireScripts, function() {
+          var module, modules, _i, _len;
 
           modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          _results = [];
           for (_i = 0, _len = modules.length; _i < _len; _i++) {
             module = modules[_i];
             if ((module != null) && typeof module.unload === 'function') {
-              _results.push(module.unload());
-            } else {
-              _results.push(void 0);
+              module.unload();
             }
           }
-          return _results;
-        };
-        onUnloadError = function(error) {
-          return console.error('AjaxNav: RequireJS unloadRequireScripts', error);
-        };
-        console.log('unload', this.activeState.requireScripts);
-        requirejs(this.activeState.requireScripts, onUnloadSuccess, onUnloadError);
-        if (typeof cb === 'function') {
-          return cb();
-        }
+          if (typeof cb === 'function') {
+            return cb();
+          }
+        });
       };
 
       AjaxNav.prototype.removePageStyles = function(state) {
@@ -121,38 +132,30 @@
       };
 
       AjaxNav.prototype.loadScripts = function(state, cb) {
-        var loadScriptsError, loadScriptsSuccess;
+        var _this = this;
 
         if ((state.scripts != null) && state.scripts.length > 0) {
-          loadScriptsSuccess = cb;
-          loadScriptsError = function(error) {
-            console.warn("AjaxNav loadScripts: RequireJS failed to load scripts due to " + error.requireType, error.requireModules);
-            return loadScriptsSuccess();
-          };
-          return requirejs(state.scripts, loadScriptsSuccess, loadScriptsError);
+          return requirejs(state.scripts, function() {
+            return cb();
+          });
         } else {
           return cb();
         }
       };
 
-      AjaxNav.prototype.injectStylesheet = function(href) {
-        var stylesheet;
-
-        stylesheet = document.createElement('link');
-        stylesheet.setAttribute('rel', 'stylesheet');
-        stylesheet.setAttribute('type', "text/css");
-        stylesheet.setAttribute('href', href);
-        return this.head.appendChild(stylesheet);
-      };
-
       AjaxNav.prototype.loadContent = function(state) {
-        var href, _i, _len, _ref;
+        var head, href, stylesheet, _i, _len, _ref;
 
         if (state.stylesheets != null) {
           _ref = state.stylesheets;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             href = _ref[_i];
-            this.injectStylesheet(href);
+            stylesheet = document.createElement('link');
+            stylesheet.setAttribute('rel', 'stylesheet');
+            stylesheet.setAttribute('type', "text/css");
+            stylesheet.setAttribute('href', href);
+            head = document.getElementsByTagName('head')[0];
+            head.appendChild(stylesheet);
           }
         }
         this.content.set('html', state.html);
