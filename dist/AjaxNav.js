@@ -15,10 +15,10 @@
         this.loadPage = __bind(this.loadPage, this);
         this.changeState = __bind(this.changeState, this);
         this.loadContent = __bind(this.loadContent, this);
+        this.injectStylesheet = __bind(this.injectStylesheet, this);
         this.loadScripts = __bind(this.loadScripts, this);
         this.removePageStyles = __bind(this.removePageStyles, this);
         this.unloadRequireScripts = __bind(this.unloadRequireScripts, this);
-        this.onClick = __bind(this.onClick, this);
         this.onPop = __bind(this.onPop, this);
         this.getXHR = __bind(this.getXHR, this);
         var _this = this;
@@ -29,25 +29,10 @@
         }
         this.content = document.getElementById('main');
         this.xhr = this.getXHR();
+        this.head = document.getElementsByTagName('head')[0];
         requirejs(['global'], function(global) {
           var origin;
 
-          console.log(global);
-          requirejs(global.requireScripts, function() {
-            var module, modules, _i, _len, _results;
-
-            modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-            _results = [];
-            for (_i = 0, _len = modules.length; _i < _len; _i++) {
-              module = modules[_i];
-              if ((module != null) && typeof module.load === 'function') {
-                _results.push(module.load());
-              } else {
-                _results.push(void 0);
-              }
-            }
-            return _results;
-          });
           _this.defaultState = {
             title: document.title,
             html: _this.content.innerHTML,
@@ -58,8 +43,12 @@
           };
           _this.activeState = _this.defaultState;
           origin = window.location.origin;
-          document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", _this.onClick);
-          return window.addEventListener("popstate", _this.onPop);
+          _this = _this;
+          window.addEventListener("popstate", _this.onPop);
+          return document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", function(event) {
+            event.preventDefault();
+            return _this.loadPage(this.href);
+          });
         });
       }
 
@@ -68,9 +57,10 @@
 
         return new Request.JSON({
           onRequest: function() {
-            return window.scrollTo(0, 0);
+            return document.body.style.cursor = "wait";
           },
           onSuccess: function(json) {
+            document.body.style.cursor = "";
             if (json.html != null) {
               _this.changeState(json);
               return window.history.pushState(json, json.title, json.url);
@@ -84,72 +74,83 @@
         return this.changeState(event.state);
       };
 
-      AjaxNav.prototype.onClick = function(event) {
-        var href;
-
-        event.preventDefault();
-        if (event.target.tagName === 'A') {
-          href = event.target.href;
-        } else {
-          href = event.target.getParent('a').href;
-        }
-        return this.loadPage(href);
-      };
-
       AjaxNav.prototype.unloadRequireScripts = function(cb) {
-        return requirejs(this.activeState.requireScripts, function() {
-          var module, modules, _i, _len;
+        var onUnloadError, onUnloadSuccess;
+
+        onUnloadSuccess = function() {
+          var module, modules, _i, _len, _results;
 
           modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          _results = [];
           for (_i = 0, _len = modules.length; _i < _len; _i++) {
             module = modules[_i];
             if ((module != null) && typeof module.unload === 'function') {
-              module.unload();
+              _results.push(module.unload());
+            } else {
+              _results.push(void 0);
             }
           }
-          if (typeof cb === 'function') {
-            return cb();
-          }
-        });
+          return _results;
+        };
+        onUnloadError = function(error) {
+          return console.error('AjaxNav: RequireJS unloadRequireScripts', error);
+        };
+        console.log('unload', this.activeState.requireScripts);
+        requirejs(this.activeState.requireScripts, onUnloadSuccess, onUnloadError);
+        if (typeof cb === 'function') {
+          return cb();
+        }
       };
 
       AjaxNav.prototype.removePageStyles = function(state) {
         var href, _i, _len, _ref, _results;
 
-        _ref = state.stylesheets;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          href = _ref[_i];
-          console.log('removing stylesheet', "link[href*='" + href + "']");
-          _results.push($$("link[href*='" + href + "']").destroy());
+        if (state.stylesheets != null) {
+          _ref = state.stylesheets;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            href = _ref[_i];
+            console.log('removing stylesheet', "link[href*='" + href + "']");
+            _results.push($$("link[href*='" + href + "']").destroy());
+          }
+          return _results;
         }
-        return _results;
       };
 
       AjaxNav.prototype.loadScripts = function(state, cb) {
-        var _this = this;
+        var loadScriptsError, loadScriptsSuccess;
 
-        if (state.scripts.length > 0) {
-          return requirejs(state.scripts, function() {
-            return cb();
-          });
+        if ((state.scripts != null) && state.scripts.length > 0) {
+          loadScriptsSuccess = cb;
+          loadScriptsError = function(error) {
+            console.warn("AjaxNav loadScripts: RequireJS failed to load scripts due to " + error.requireType, error.requireModules);
+            return loadScriptsSuccess();
+          };
+          return requirejs(state.scripts, loadScriptsSuccess, loadScriptsError);
         } else {
           return cb();
         }
       };
 
-      AjaxNav.prototype.loadContent = function(state) {
-        var head, href, stylesheet, _i, _len, _ref;
+      AjaxNav.prototype.injectStylesheet = function(href) {
+        var stylesheet;
 
-        _ref = state.stylesheets;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          href = _ref[_i];
-          stylesheet = document.createElement('link');
-          stylesheet.setAttribute('rel', 'stylesheet');
-          stylesheet.setAttribute('type', "text/css");
-          stylesheet.setAttribute('href', href);
-          head = document.getElementsByTagName('head')[0];
-          head.appendChild(stylesheet);
+        stylesheet = document.createElement('link');
+        stylesheet.setAttribute('rel', 'stylesheet');
+        stylesheet.setAttribute('type', "text/css");
+        stylesheet.setAttribute('href', href);
+        return this.head.appendChild(stylesheet);
+      };
+
+      AjaxNav.prototype.loadContent = function(state) {
+        var href, _i, _len, _ref;
+
+        if (state.stylesheets != null) {
+          _ref = state.stylesheets;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            href = _ref[_i];
+            this.injectStylesheet(href);
+          }
         }
         this.content.set('html', state.html);
         this.activeState = state;

@@ -10,7 +10,7 @@ module.exports = (grunt) =>
 						expand: true
 						cwd: 'src'
 						src: ['AjaxNav.coffee']
-						dest: 'src'
+						dest: 'dist'
 						ext: '.js'
 					},
 					{
@@ -63,7 +63,7 @@ module.exports = (grunt) =>
 			
 			coffee:
 				files: ['src/**/*.coffee']
-				tasks: ['coffee']
+				tasks: ['coffee', 'requirejs']
 
 		connect:
 			server:
@@ -87,14 +87,25 @@ module.exports = (grunt) =>
 					logLevel: 1
 					name: "AjaxNav"
 					out: "dist/AjaxNav.js"
-					baseUrl: "src"
+					baseUrl: "dist"
 					exclude: ['EventEmitter','mootools']
 					paths:{
 						'domReady' : '../components/requirejs-domready/domReady'
-						'AjaxNav': '../src/AjaxNav'
+						'AjaxNav': '../dist/AjaxNav'
 						'EventEmitter': '../components/EventEmitter/dist/EventEmitter'
 						'mootools' : '../demo/mootools'
 					}
+
+		shell:
+			bower_cache:
+				command: 'bower cache-clean'
+				options:
+					stdout: true
+
+			bower:
+				command: 'bower install'
+				options:
+					stdout: true
 
 		
 	grunt.loadNpmTasks 'grunt-contrib-coffee'
@@ -105,6 +116,7 @@ module.exports = (grunt) =>
 	grunt.loadNpmTasks 'grunt-contrib-connect'
 	grunt.loadNpmTasks 'grunt-contrib-requirejs'
 	grunt.loadNpmTasks 'grunt-exec'
+	grunt.loadNpmTasks 'grunt-shell'
 	
 	grunt.registerTask 'default', ['compile', 'requirejs', 'uglify']
 
