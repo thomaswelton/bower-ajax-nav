@@ -37,9 +37,11 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		getXHR: () =>
 			new Request.JSON
 				onRequest: () =>
+					@fireEvent 'onRequest'
 					document.body.style.cursor = "wait"
 					
 				onSuccess: (json) =>
+					@fireEvent 'onXHRSuccess'
 					document.body.style.cursor = ""
 
 					if json.html?
@@ -105,7 +107,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				for module in modules
 					module.load() if module? and typeof module.load is 'function'
 
-			@fireEvent 'onChangeState'
+			@fireEvent 'onContentLoaded'
 
 		changeState: (state = @defaultState) =>
 			window.scrollTo 0, 0
