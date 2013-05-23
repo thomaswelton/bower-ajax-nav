@@ -9,15 +9,9 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 
 			@content = document.getElementById 'main'
 			@xhr = @getXHR()
+			@head = document.getElementsByTagName('head')[0]
 
 			requirejs ['global'], (global) =>
-				console.log global
-
-				## Load page specific requireScripts for first load
-				requirejs global.requireScripts, (modules...) ->
-					for module in modules
-						module.load() if module? and typeof module.load is 'function'
-
 				@defaultState = 
 					title: document.title
 					html: @content.innerHTML
@@ -31,8 +25,16 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				##selector matches internal links
 				origin = window.location.origin
 
-				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", @onClick
+				_this = @
+				
 				window.addEventListener "popstate", @onPop
+
+				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", (event) ->
+					## Exclude clicks that open in a new window, tab or trigger a download
+					return if event.shift or event.alt or event.meta
+					
+					event.preventDefault()
+					_this.loadPage this.href
 
 		getXHR: () =>
 			new Request.JSON
@@ -52,26 +54,20 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			@fireEvent 'onPopState'
 			@changeState event.state
 
-		onClick: (event) =>
-			## Exclude clicks that open in a new window, tab or trigger a download
-			return if event.shift or event.alt or event.meta
-
-			event.preventDefault()
-
-			if event.target.tagName is 'A'
-				href = event.target.href
-			else 
-				href = event.target.getParent('a').href
-
-			@loadPage href
-
 		unloadRequireScripts: (cb) =>
 			## Unload any active scripts that may be running stuff like setIntervals
-			requirejs @activeState.requireScripts, (modules...) ->
+			
+			onUnloadSuccess = (modules...) ->
 				for module in modules
 					module.unload() if module? and typeof module.unload is 'function'
 
-				cb() if typeof cb is 'function'
+			onUnloadError = (error) ->
+				console.error 'AjaxNav: RequireJS unloadRequireScripts', error
+
+			console.log 'unload', @activeState.requireScripts
+			requirejs @activeState.requireScripts, onUnloadSuccess, onUnloadError
+
+			cb() if typeof cb is 'function'
 
 		removePageStyles: (state) =>
 			if state.stylesheets? then for href in state.stylesheets
@@ -80,24 +76,35 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				$$("link[href*='#{href}']").destroy()
 
 		loadScripts: (state, cb) =>
+			## Load in <script> files before injecting HTML
 			if state.scripts? and state.scripts.length > 0
-				requirejs state.scripts, () =>
-					cb()
+				
+				## On Success callback
+				loadScriptsSuccess = cb
+
+				## On error log message and force normal page load
+				loadScriptsError = (error) ->
+					console.warn "AjaxNav loadScripts: RequireJS failed to load scripts due to #{error.requireType}", error.requireModules
+					## Even if the scrips fail to load the page should continue trying to load
+					loadScriptsSuccess()
+
+				requirejs state.scripts, loadScriptsSuccess, loadScriptsError
 			else
 				## No <script> dependencies
 				cb()
 
+		injectStylesheet: (href) =>
+			stylesheet = document.createElement 'link'
+			stylesheet.setAttribute 'rel', 'stylesheet'
+			stylesheet.setAttribute 'type', "text/css"
+			stylesheet.setAttribute 'href', href
+
+			@head.appendChild stylesheet
+
 		loadContent: (state) =>
 			## Inject the stylesheets and HTML that may contain <script> dependencies
 			## Set the new active state
-			if state.stylesheets? then for href in state.stylesheets
-				stylesheet = document.createElement 'link'
-				stylesheet.setAttribute 'rel', 'stylesheet'
-				stylesheet.setAttribute 'type', "text/css"
-				stylesheet.setAttribute 'href', href
-
-				head = document.getElementsByTagName('head')[0]
-				head.appendChild stylesheet
+			if state.stylesheets? then @injectStylesheet href for href in state.stylesheets
 
 			@content.set 'html', state.html
 			@activeState = state
