@@ -30,15 +30,25 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
-			new Request.JSON
+			xhr = new Request
 				onRequest: () =>
 					@fireEvent 'onRequest'
 					document.body.style.cursor = "wait"
 					
-				onSuccess: (json) =>
+				onSuccess: (responseText) =>
+					if refresh = xhr.getHeader 'Refresh'
+						console.log refresh
+						# Code igniter refresh redirect responds with
+						# "0;url=http://site.com/someurl"
+						
+						url = refresh.split('=')[1]
+						return window.location = url
+
 					@fireEvent 'onXHRSuccess'
 					document.body.style.cursor = ""
 
+
+					json = JSON.decode responseText
 					if json.html?
 						@changeState json
 						window.history.pushState json, json.title, json.url
