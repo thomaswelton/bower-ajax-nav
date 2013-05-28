@@ -1,10 +1,11 @@
+
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  define(['EventEmitter', 'mootools'], function(EventEmitter) {
+  define('AjaxNav',['EventEmitter', 'mootools'], function(EventEmitter) {
     var AjaxNav, ajaxNav;
 
     AjaxNav = (function(_super) {
@@ -52,21 +53,32 @@
       }
 
       AjaxNav.prototype.getXHR = function() {
-        var _this = this;
+        var xhr,
+          _this = this;
 
-        return new Request.JSON({
+        return xhr = new Request({
           onRequest: function() {
             _this.fireEvent('onRequest');
             return document.body.style.cursor = "wait";
           },
-          onSuccess: function(json) {
+          onSuccess: function(responseText) {
+            var json, refresh, url;
+
+            if (refresh = xhr.getHeader('Refresh')) {
+              console.log(refresh);
+              url = refresh.split('=')[1];
+              return window.location = url;
+            }
             _this.fireEvent('onXHRSuccess');
             document.body.style.cursor = "";
-            console.log('hi thomas', json);
+            json = JSON.decode(responseText);
             if (json.html != null) {
               _this.changeState(json);
               return window.history.pushState(json, json.title, json.url);
             }
+          },
+          onFailure: function(response) {
+            return document.documentElement.innerHTML = response.response;
           }
         });
       };

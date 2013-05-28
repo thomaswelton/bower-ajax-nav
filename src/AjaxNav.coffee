@@ -53,6 +53,9 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 						@changeState json
 						window.history.pushState json, json.title, json.url
 
+				onFailure: (response) =>
+					document.documentElement.innerHTML = response.response
+
 		onPop: (event) =>
 			@fireEvent 'onPopState'
 			@changeState event.state
