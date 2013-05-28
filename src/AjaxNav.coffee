@@ -25,16 +25,9 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				##selector matches internal links
 				origin = window.location.origin
 
-				_this = @
-				
+				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", @onEvent
+				document.body.addEvent "submit:relay(form[action^='/'], form[action^='#{origin}'])", @onEvent
 				window.addEventListener "popstate", @onPop
-
-				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", (event) ->
-					## Exclude clicks that open in a new window, tab or trigger a download
-					return if event.shift or event.alt or event.meta
-					
-					event.preventDefault()
-					_this.loadPage this.href
 
 		getXHR: () =>
 			new Request.JSON
@@ -53,6 +46,35 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		onPop: (event) =>
 			@fireEvent 'onPopState'
 			@changeState event.state
+
+		onEvent: (event) =>
+			## Exclude clicks that open in a new window, tab, trigger a download or whose default action was prevented
+			return if event.shift or event.alt or event.meta or event.event.defaultPrevented
+			event.preventDefault()
+
+			switch event.type
+				when 'click' then @onClick event
+				when 'submit' then @onSubmit event
+
+		onClick: (event) =>
+			if event.target.tagName is 'A'
+				href = event.target.href
+			else 
+				href = event.target.getParent('a').href
+
+			@loadPage href
+
+		onSubmit: (event) =>
+			if event.target.tagName is 'FORM'
+				form = event.target
+			else 
+				form = event.target.getParent('form')
+
+			return if @xhr.isRunning()
+			
+			@xhr.send
+				url: form.action
+				data: form
 
 		unloadRequireScripts: (cb) =>
 			## Unload any active scripts that may be running stuff like setIntervals
