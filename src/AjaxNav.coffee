@@ -136,6 +136,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 
 			@xhr.send 
 				url: url
+				method: 'get'
 
 
 	return ajaxNav = new AjaxNav()
