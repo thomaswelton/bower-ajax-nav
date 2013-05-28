@@ -1,10 +1,11 @@
+
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  define(['EventEmitter', 'mootools'], function(EventEmitter) {
+  define('AjaxNav',['EventEmitter', 'mootools'], function(EventEmitter) {
     var AjaxNav, ajaxNav;
 
     AjaxNav = (function(_super) {
@@ -18,6 +19,9 @@
         this.loadScripts = __bind(this.loadScripts, this);
         this.removePageStyles = __bind(this.removePageStyles, this);
         this.unloadRequireScripts = __bind(this.unloadRequireScripts, this);
+        this.onSubmit = __bind(this.onSubmit, this);
+        this.onClick = __bind(this.onClick, this);
+        this.onEvent = __bind(this.onEvent, this);
         this.onPop = __bind(this.onPop, this);
         this.getXHR = __bind(this.getXHR, this);
         var _this = this;
@@ -42,15 +46,9 @@
           };
           _this.activeState = _this.defaultState;
           origin = window.location.origin;
-          _this = _this;
-          window.addEventListener("popstate", _this.onPop);
-          return document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", function(event) {
-            if (event.shift || event.alt || event.meta) {
-              return;
-            }
-            event.preventDefault();
-            return _this.loadPage(this.href);
-          });
+          document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", _this.onEvent);
+          document.body.addEvent("submit:relay(form[action^='/'], form[action^='" + origin + "'])", _this.onEvent);
+          return window.addEventListener("popstate", _this.onPop);
         });
       }
 
@@ -59,9 +57,11 @@
 
         return new Request.JSON({
           onRequest: function() {
+            _this.fireEvent('onRequest');
             return document.body.style.cursor = "wait";
           },
           onSuccess: function(json) {
+            _this.fireEvent('onXHRSuccess');
             document.body.style.cursor = "";
             if (json.html != null) {
               _this.changeState(json);
@@ -74,6 +74,47 @@
       AjaxNav.prototype.onPop = function(event) {
         this.fireEvent('onPopState');
         return this.changeState(event.state);
+      };
+
+      AjaxNav.prototype.onEvent = function(event) {
+        if (event.shift || event.alt || event.meta || event.event.defaultPrevented) {
+          return;
+        }
+        event.preventDefault();
+        switch (event.type) {
+          case 'click':
+            return this.onClick(event);
+          case 'submit':
+            return this.onSubmit(event);
+        }
+      };
+
+      AjaxNav.prototype.onClick = function(event) {
+        var href;
+
+        if (event.target.tagName === 'A') {
+          href = event.target.href;
+        } else {
+          href = event.target.getParent('a').href;
+        }
+        return this.loadPage(href);
+      };
+
+      AjaxNav.prototype.onSubmit = function(event) {
+        var form;
+
+        if (event.target.tagName === 'FORM') {
+          form = event.target;
+        } else {
+          form = event.target.getParent('form');
+        }
+        if (this.xhr.isRunning()) {
+          return;
+        }
+        return this.xhr.send({
+          url: form.action,
+          data: form
+        });
       };
 
       AjaxNav.prototype.unloadRequireScripts = function(cb) {
@@ -171,7 +212,7 @@
           }
           return _results;
         });
-        return this.fireEvent('onChangeState');
+        return this.fireEvent('onContentLoaded');
       };
 
       AjaxNav.prototype.changeState = function(state) {
