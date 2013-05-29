@@ -23,13 +23,15 @@
         this.onEvent = __bind(this.onEvent, this);
         this.onPop = __bind(this.onPop, this);
         this.getXHR = __bind(this.getXHR, this);
-        var _this = this;
+        var roleMain,
+          _this = this;
 
         AjaxNav.__super__.constructor.call(this);
         if (typeof history.pushState !== 'function') {
           return;
         }
-        this.content = document.getElementById('main');
+        roleMain = $$('[role=main]');
+        this.content = roleMain.length ? roleMain[0] : $('main');
         this.xhr = this.getXHR();
         this.head = document.getElementsByTagName('head')[0];
         requirejs(['global'], function(global) {
@@ -68,7 +70,7 @@
               url = refresh.split('=')[1];
               return window.location = url;
             }
-            _this.fireEvent('onXHRSuccess');
+            _this.fireEvent('onXHRSuccess', responseText);
             document.body.style.cursor = "";
             json = JSON.decode(responseText);
             if (json.html != null) {
@@ -83,7 +85,7 @@
       };
 
       AjaxNav.prototype.onPop = function(event) {
-        this.fireEvent('onPopState');
+        this.fireEvent('onPopState', event);
         return this.changeState(event.state);
       };
 
@@ -225,7 +227,7 @@
           }
           return _results;
         });
-        return this.fireEvent('onContentLoaded');
+        return this.fireEvent('onContentLoaded', state);
       };
 
       AjaxNav.prototype.changeState = function(state) {
