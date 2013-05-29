@@ -25,8 +25,10 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				##selector matches internal links
 				origin = window.location.origin
 
-				document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false]), a[href^='#{origin}']:not([data-ajax-nav=false]))", @onEvent
-				document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false]), form[action^='#{origin}']:not([data-ajax-nav=false]))", @onEvent
+				# data-ajax-nav
+
+				document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+				document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
 				window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
@@ -47,7 +49,6 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 					@fireEvent 'onXHRSuccess'
 					document.body.style.cursor = ""
 
-
 					json = JSON.decode responseText
 					if json.html?
 						@changeState json
@@ -65,16 +66,19 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			return if event.shift or event.alt or event.meta or event.event.defaultPrevented
 			event.preventDefault()
 
+			console.log event
+
 			switch event.type
 				when 'click' then @onClick event
 				when 'submit' then @onSubmit event
 
 		onClick: (event) =>
 			if event.target.tagName is 'A'
-				href = event.target.href
+				link = event.target
 			else 
-				href = event.target.getParent('a').href
+				link = event.target.getParent('a')
 
+			href = link.href
 			@loadPage href
 
 		onSubmit: (event) =>
@@ -82,7 +86,6 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				form = event.target
 			else 
 				form = event.target.getParent('form')
-
 			return if @xhr.isRunning()
 			
 			@xhr.send

@@ -45,8 +45,8 @@
           };
           _this.activeState = _this.defaultState;
           origin = window.location.origin;
-          document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false]), a[href^='" + origin + "']:not([data-ajax-nav=false]))", _this.onEvent);
-          document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false]), form[action^='" + origin + "']:not([data-ajax-nav=false]))", _this.onEvent);
+          document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+          document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
           return window.addEventListener("popstate", _this.onPop);
         });
       }
@@ -92,6 +92,7 @@
           return;
         }
         event.preventDefault();
+        console.log(event);
         switch (event.type) {
           case 'click':
             return this.onClick(event);
@@ -101,13 +102,14 @@
       };
 
       AjaxNav.prototype.onClick = function(event) {
-        var href;
+        var href, link;
 
         if (event.target.tagName === 'A') {
-          href = event.target.href;
+          link = event.target;
         } else {
-          href = event.target.getParent('a').href;
+          link = event.target.getParent('a');
         }
+        href = link.href;
         return this.loadPage(href);
       };
 
