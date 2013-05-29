@@ -1,11 +1,10 @@
-
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  define('AjaxNav',['EventEmitter', 'mootools'], function(EventEmitter) {
+  define(['EventEmitter', 'mootools'], function(EventEmitter) {
     var AjaxNav, ajaxNav;
 
     AjaxNav = (function(_super) {
@@ -46,8 +45,8 @@
           };
           _this.activeState = _this.defaultState;
           origin = window.location.origin;
-          document.body.addEvent("click:relay(a[href^='/'], a[href^='" + origin + "'])", _this.onEvent);
-          document.body.addEvent("submit:relay(form[action^='/'], form[action^='" + origin + "'])", _this.onEvent);
+          document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false]), a[href^='" + origin + "']:not([data-ajax-nav=false]))", _this.onEvent);
+          document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false]), form[action^='" + origin + "']:not([data-ajax-nav=false]))", _this.onEvent);
           return window.addEventListener("popstate", _this.onPop);
         });
       }

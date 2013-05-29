@@ -25,8 +25,8 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				##selector matches internal links
 				origin = window.location.origin
 
-				document.body.addEvent "click:relay(a[href^='/'], a[href^='#{origin}'])", @onEvent
-				document.body.addEvent "submit:relay(form[action^='/'], form[action^='#{origin}'])", @onEvent
+				document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false]), a[href^='#{origin}']:not([data-ajax-nav=false]))", @onEvent
+				document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false]), form[action^='#{origin}']:not([data-ajax-nav=false]))", @onEvent
 				window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
