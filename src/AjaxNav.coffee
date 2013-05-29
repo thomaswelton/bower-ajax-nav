@@ -49,7 +49,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 						url = refresh.split('=')[1]
 						return window.location = url
 
-					@fireEvent 'onXHRSuccess'
+					@fireEvent 'onXHRSuccess', responseText
 					document.body.style.cursor = ""
 
 					json = JSON.decode responseText
@@ -61,7 +61,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 					document.documentElement.innerHTML = response.response
 
 		onPop: (event) =>
-			@fireEvent 'onPopState'
+			@fireEvent 'onPopState', event
 			@changeState event.state
 
 		onEvent: (event) =>
@@ -155,7 +155,7 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				for module in modules
 					module.load() if module? and typeof module.load is 'function'
 
-			@fireEvent 'onContentLoaded'
+			@fireEvent 'onContentLoaded', state
 
 		changeState: (state = @defaultState) =>
 			window.scrollTo 0, 0
