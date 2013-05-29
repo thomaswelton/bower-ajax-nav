@@ -7,7 +7,10 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			## Only ajax nav if we can push state
 			return if typeof(history.pushState) isnt 'function'
 
-			@content = document.getElementById 'main'
+
+			roleMain = $$('[role=main]')
+			@content = if roleMain.length then roleMain[0] else $ 'main'
+
 			@xhr = @getXHR()
 			@head = document.getElementsByTagName('head')[0]
 
