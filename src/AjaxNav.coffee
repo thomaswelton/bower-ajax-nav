@@ -89,10 +89,11 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				form = event.target
 			else 
 				form = event.target.getParent('form')
+
 			return if @xhr.isRunning()
 			
 			@xhr.send
-				url: form.action
+				url: form.getProperty 'action'
 				data: form
 
 		unloadRequireScripts: (cb) =>

@@ -127,7 +127,7 @@
           return;
         }
         return this.xhr.send({
-          url: form.action,
+          url: form.getProperty('action'),
           data: form
         });
       };
