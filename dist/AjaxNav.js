@@ -35,7 +35,7 @@
         this.xhr = this.getXHR();
         this.head = document.getElementsByTagName('head')[0];
         requirejs(['global'], function(global) {
-          var origin;
+          var pageScripts;
 
           _this.defaultState = {
             title: document.title,
@@ -46,10 +46,23 @@
             requireScripts: global.requireScripts
           };
           _this.activeState = _this.defaultState;
-          origin = window.location.origin;
-          document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
-          document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
-          return window.addEventListener("popstate", _this.onPop);
+          pageScripts = global.requireScripts.slice(0);
+          pageScripts.push('domReady!');
+          return requirejs(pageScripts, function() {
+            var module, modules, origin, _i, _len;
+
+            modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            for (_i = 0, _len = modules.length; _i < _len; _i++) {
+              module = modules[_i];
+              if ((module != null) && typeof module.load === 'function') {
+                module.load();
+              }
+            }
+            origin = window.location.origin;
+            document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+            document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+            return window.addEventListener("popstate", _this.onPop);
+          });
         });
       }
 

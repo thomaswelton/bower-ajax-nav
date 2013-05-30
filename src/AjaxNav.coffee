@@ -25,14 +25,21 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 
 				@activeState = @defaultState
 
-				##selector matches internal links
-				origin = window.location.origin
+				## Clone the page scripts array
+				pageScripts = global.requireScripts.slice(0);
+				## add domReady!
+				pageScripts.push 'domReady!'
+				## Load page specific requireScripts for first load on domready
+				requirejs pageScripts, (modules...) =>
+					for module in modules
+						module.load() if module? and typeof module.load is 'function'
 
-				# data-ajax-nav
-
-				document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
-				document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
-				window.addEventListener "popstate", @onPop
+					##selector matches internal links
+					origin = window.location.origin
+					
+					document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+					document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+					window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
 			xhr = new Request
