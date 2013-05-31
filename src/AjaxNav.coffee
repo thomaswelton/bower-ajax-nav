@@ -4,10 +4,6 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 		constructor: () ->
 			super()
 
-			## Only ajax nav if we can push state
-			return if typeof(history.pushState) isnt 'function'
-
-
 			roleMain = $$('[role=main]')
 			@content = if roleMain.length then roleMain[0] else $ 'main'
 
@@ -33,6 +29,10 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				requirejs pageScripts, (modules...) =>
 					for module in modules
 						module.load() if module? and typeof module.load is 'function'
+
+
+					## Only ajax nav if we can push state
+					return if typeof(history.pushState) isnt 'function'
 
 					##selector matches internal links
 					origin = window.location.origin

@@ -27,9 +27,6 @@
           _this = this;
 
         AjaxNav.__super__.constructor.call(this);
-        if (typeof history.pushState !== 'function') {
-          return;
-        }
         roleMain = $$('[role=main]');
         this.content = roleMain.length ? roleMain[0] : $('main');
         this.xhr = this.getXHR();
@@ -57,6 +54,9 @@
               if ((module != null) && typeof module.load === 'function') {
                 module.load();
               }
+            }
+            if (typeof history.pushState !== 'function') {
+              return;
             }
             origin = window.location.origin;
             $(document.body).addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
