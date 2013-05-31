@@ -59,8 +59,8 @@
               }
             }
             origin = window.location.origin;
-            document.body.addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
-            document.body.addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+            $(document.body).addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+            $(document.body).addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
             return window.addEventListener("popstate", _this.onPop);
           });
         });

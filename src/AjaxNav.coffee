@@ -37,8 +37,8 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 					##selector matches internal links
 					origin = window.location.origin
 					
-					document.body.addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
-					document.body.addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+					$(document.body).addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+					$(document.body).addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
 					window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
