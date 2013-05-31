@@ -249,6 +249,9 @@
         if (state == null) {
           state = this.defaultState;
         }
+        if (state === this.activeState) {
+          return;
+        }
         window.scrollTo(0, 0);
         document.title = state.title;
         if (typeof _gaq !== "undefined" && _gaq !== null) {

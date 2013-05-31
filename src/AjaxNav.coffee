@@ -166,6 +166,8 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			@fireEvent 'onContentLoaded', state
 
 		changeState: (state = @defaultState) =>
+			return if state is @activeState
+
 			window.scrollTo 0, 0
 			document.title = state.title
 
