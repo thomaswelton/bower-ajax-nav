@@ -40,7 +40,7 @@ module.exports = (grunt) =>
 			
 			coffee:
 				files: ['src/**/*.coffee']
-				tasks: ['coffee', 'requirejs']
+				tasks: ['coffee']
 
 		connect:
 			server:

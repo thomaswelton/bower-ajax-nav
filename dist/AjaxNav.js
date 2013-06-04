@@ -206,6 +206,9 @@
       AjaxNav.prototype.injectStylesheet = function(href) {
         var stylesheet;
 
+        if ($$("link[href*='" + href + "']").length > 0) {
+          return;
+        }
         stylesheet = document.createElement('link');
         stylesheet.setAttribute('rel', 'stylesheet');
         stylesheet.setAttribute('type', "text/css");
@@ -214,33 +217,47 @@
       };
 
       AjaxNav.prototype.loadContent = function(state) {
-        var href, _i, _len, _ref;
+        var href, loadStyles, _i, _len, _ref,
+          _this = this;
 
+        loadStyles = [];
         if (state.stylesheets != null) {
           _ref = state.stylesheets;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             href = _ref[_i];
-            this.injectStylesheet(href);
+            loadStyles.push("css!" + href);
           }
         }
-        this.content.set('html', state.html);
-        this.activeState = state;
-        requirejs(state.requireScripts, function() {
-          var module, modules, _j, _len1, _results;
+        return requirejs(loadStyles, function() {
+          var _j, _len1, _ref1;
 
-          modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          _results = [];
-          for (_j = 0, _len1 = modules.length; _j < _len1; _j++) {
-            module = modules[_j];
-            if ((module != null) && typeof module.load === 'function') {
-              _results.push(module.load());
-            } else {
-              _results.push(void 0);
+          if (state.stylesheets != null) {
+            _ref1 = state.stylesheets;
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              href = _ref1[_j];
+              _this.injectStylesheet(href);
+              console.log("Loaded stylesheet " + href);
             }
           }
-          return _results;
+          _this.content.set('html', state.html);
+          _this.activeState = state;
+          requirejs(state.requireScripts, function() {
+            var module, modules, _k, _len2, _results;
+
+            modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            _results = [];
+            for (_k = 0, _len2 = modules.length; _k < _len2; _k++) {
+              module = modules[_k];
+              if ((module != null) && typeof module.load === 'function') {
+                _results.push(module.load());
+              } else {
+                _results.push(void 0);
+              }
+            }
+            return _results;
+          });
+          return _this.fireEvent('onContentLoaded', state);
         });
-        return this.fireEvent('onContentLoaded', state);
       };
 
       AjaxNav.prototype.changeState = function(state) {
@@ -254,9 +271,6 @@
         }
         window.scrollTo(0, 0);
         document.title = state.title;
-        if (typeof _gaq !== "undefined" && _gaq !== null) {
-          _gaq.push(['_trackPageview', state.url]);
-        }
         return this.unloadRequireScripts(function() {
           return _this.loadScripts(state, function() {
             _this.removePageStyles(_this.activeState);

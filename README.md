@@ -6,6 +6,16 @@ bower-ajax-nav
 
 Ajax Navigation component
 
+This module uses `require-css` to load CSS files. This needs to be added to your requirejs config
+
+```coffee
+requirejs.config
+	map:
+	    '*':
+	        'css': 'path/to/require-css/css'
+```
+
+
 Add data attribute `data-ajax-nav="false"` to links or forms to disable ajax loading
 
 ### Events

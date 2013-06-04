@@ -143,6 +143,8 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				cb()
 
 		injectStylesheet: (href) =>
+			return if $$("link[href*='#{href}']").length > 0
+			
 			stylesheet = document.createElement 'link'
 			stylesheet.setAttribute 'rel', 'stylesheet'
 			stylesheet.setAttribute 'type', "text/css"
@@ -151,19 +153,30 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			@head.appendChild stylesheet
 
 		loadContent: (state) =>
-			## Inject the stylesheets and HTML that may contain <script> dependencies
 			## Set the new active state
-			if state.stylesheets? then @injectStylesheet href for href in state.stylesheets
+			## Load CSS for this content using require-css plugin
+			loadStyles = []
+			if state.stylesheets?
+				loadStyles.push "css!#{href}" for href in state.stylesheets
 
-			@content.set 'html', state.html
-			@activeState = state
+			requirejs loadStyles, () =>
+				if state.stylesheets?
+					for href in state.stylesheets
+						## Bugfix workaround. These should have been injected by
+						## require-css but after deleted require-css wont add them again 
+						@injectStylesheet href
+						console.log "Loaded stylesheet #{href}" 
 
-			## Load require js modules for this page
-			requirejs state.requireScripts, (modules...) ->
-				for module in modules
-					module.load() if module? and typeof module.load is 'function'
+				## Inject the HTML that may contain <script> dependencies
+				@content.set 'html', state.html
+				@activeState = state
 
-			@fireEvent 'onContentLoaded', state
+				## Load require js modules for this page
+				requirejs state.requireScripts, (modules...) ->
+					for module in modules
+						module.load() if module? and typeof module.load is 'function'
+
+				@fireEvent 'onContentLoaded', state
 
 		changeState: (state = @defaultState) =>
 			return if state is @activeState
