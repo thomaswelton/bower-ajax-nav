@@ -171,9 +171,6 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			window.scrollTo 0, 0
 			document.title = state.title
 
-			## If google analytics is found track ajax load
-			if _gaq? then _gaq.push ['_trackPageview', state.url]
-
 			## Unload any active rjs scripts
 			@unloadRequireScripts () =>
 				## Load all new script dependencies
