@@ -3,23 +3,36 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Ajax Nav Demo</title>
-	<link rel="stylesheet" href="../dist/twitter.css">
 	<script data-main="main" src="../components/requirejs/require.js"></script>
 	<script>
 		requirejs.config({
 			baseUrl: "",
 			config:{
-
+				'AjaxNav' : {
+					'scripts' : ['foo'],
+					'requireScripts': ['bar'],
+					'stylesheets': []
+				}
 			},
 			paths:{
 				'domReady' : '../components/requirejs-domready/domReady',
-				'AjaxNav' : '../src/AjaxNav',
+				'AjaxNav' : '../dist/AjaxNav',
 				'EventEmitter': '../components/EventEmitter/dist/EventEmitter'
 			}
 		});
 	</script>
 </head>
 <body>
-	<h1>AjaxNav</h1>
+	<header>
+		<h1>AjaxNav</h1>
+	</header>
+
+	<div role="main">
+		
+	</div>
+
+	<footer>
+		<!-- no feet -->
+	</footer>
 </body>
 </html>
