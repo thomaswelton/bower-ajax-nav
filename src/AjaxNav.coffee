@@ -1,4 +1,9 @@
-## Some module
+
+requirejs.config
+	map:
+        '*':
+            'css': 'components/require-css/css'
+
 define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 	class AjaxNav extends EventEmitter
 		constructor: (@config) ->
