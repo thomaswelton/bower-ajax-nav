@@ -1,7 +1,7 @@
 ## Some module
-define ['EventEmitter', 'mootools'], (EventEmitter) ->
+define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 	class AjaxNav extends EventEmitter
-		constructor: () ->
+		constructor: (@config) ->
 			super()
 
 			roleMain = $$('[role=main]')
@@ -10,36 +10,38 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 			@xhr = @getXHR()
 			@head = document.getElementsByTagName('head')[0]
 
-			requirejs ['global'], (global) =>
-				@defaultState = 
-					title: document.title
-					html: @content.innerHTML
-					url: window.location.href
-					stylesheets: global.stylesheets
-					scripts: global.scripts
-					requireScripts: global.requireScripts
+			@defaultState = 
+				title: document.title
+				html: @content.innerHTML
+				url: window.location.href
+				stylesheets: @config.stylesheets
+				scripts: @config.scripts
+				requireScripts: @config.requireScripts
 
-				@activeState = @defaultState
-
-				## Clone the page scripts array
-				pageScripts = global.requireScripts.slice(0);
-				## add domReady!
-				pageScripts.push 'domReady!'
-				## Load page specific requireScripts for first load on domready
-				requirejs pageScripts, (modules...) =>
-					for module in modules
-						module.load() if module? and typeof module.load is 'function'
+			@activeState = @defaultState
 
 
-					## Only ajax nav if we can push state
-					return if typeof(history.pushState) isnt 'function'
+			domReadyScripts = ['domReady!']
 
-					##selector matches internal links
-					origin = window.location.origin
-					
-					$(document.body).addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
-					$(document.body).addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
-					window.addEventListener "popstate", @onPop
+			if @config.requireScripts?.length > 0
+				## Load require js scripts on domready
+				domReadyScripts.unshift @config.requireScripts...
+
+			console.log domReadyScripts
+
+			requirejs [domReadyScripts], (modules...) =>
+				for module in modules
+					module.load() if module? and typeof module.load is 'function'
+
+				## Only ajax nav if we can push state
+				return if typeof(history.pushState) isnt 'function'
+
+				##selector matches internal links
+				origin = window.location.origin
+				
+				$(document.body).addEvent "click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+				$(document.body).addEvent "submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='#{origin}']:not([data-ajax-nav=false], [target=_blank]))", @onEvent
+				window.addEventListener "popstate", @onPop
 
 		getXHR: () =>
 			xhr = new Request
@@ -202,4 +204,4 @@ define ['EventEmitter', 'mootools'], (EventEmitter) ->
 				method: 'get'
 
 
-	return ajaxNav = new AjaxNav()
+	return ajaxNav = new AjaxNav(module.config())

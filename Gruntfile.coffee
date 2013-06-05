@@ -5,6 +5,9 @@ module.exports = (grunt) =>
 		## Compile coffeescript
 		coffee:
 			compile:
+				options:
+					sourceMap: false
+
 				files: [
 					{
 						expand: true

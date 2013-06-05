@@ -4,13 +4,17 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  define(['EventEmitter', 'mootools'], function(EventEmitter) {
+  define(['module', 'EventEmitter', 'mootools'], function(module, EventEmitter) {
     var AjaxNav, ajaxNav;
 
     AjaxNav = (function(_super) {
       __extends(AjaxNav, _super);
 
-      function AjaxNav() {
+      function AjaxNav(config) {
+        var domReadyScripts, roleMain, _ref,
+          _this = this;
+
+        this.config = config;
         this.loadPage = __bind(this.loadPage, this);
         this.changeState = __bind(this.changeState, this);
         this.loadContent = __bind(this.loadContent, this);
@@ -23,46 +27,42 @@
         this.onEvent = __bind(this.onEvent, this);
         this.onPop = __bind(this.onPop, this);
         this.getXHR = __bind(this.getXHR, this);
-        var roleMain,
-          _this = this;
-
         AjaxNav.__super__.constructor.call(this);
         roleMain = $$('[role=main]');
         this.content = roleMain.length ? roleMain[0] : $('main');
         this.xhr = this.getXHR();
         this.head = document.getElementsByTagName('head')[0];
-        requirejs(['global'], function(global) {
-          var pageScripts;
+        this.defaultState = {
+          title: document.title,
+          html: this.content.innerHTML,
+          url: window.location.href,
+          stylesheets: this.config.stylesheets,
+          scripts: this.config.scripts,
+          requireScripts: this.config.requireScripts
+        };
+        this.activeState = this.defaultState;
+        domReadyScripts = ['domReady!'];
+        if (((_ref = this.config.requireScripts) != null ? _ref.length : void 0) > 0) {
+          domReadyScripts.unshift.apply(domReadyScripts, this.config.requireScripts);
+        }
+        console.log(domReadyScripts);
+        requirejs([domReadyScripts], function() {
+          var modules, origin, _i, _len;
 
-          _this.defaultState = {
-            title: document.title,
-            html: _this.content.innerHTML,
-            url: window.location.href,
-            stylesheets: global.stylesheets,
-            scripts: global.scripts,
-            requireScripts: global.requireScripts
-          };
-          _this.activeState = _this.defaultState;
-          pageScripts = global.requireScripts.slice(0);
-          pageScripts.push('domReady!');
-          return requirejs(pageScripts, function() {
-            var module, modules, origin, _i, _len;
-
-            modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-            for (_i = 0, _len = modules.length; _i < _len; _i++) {
-              module = modules[_i];
-              if ((module != null) && typeof module.load === 'function') {
-                module.load();
-              }
+          modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          for (_i = 0, _len = modules.length; _i < _len; _i++) {
+            module = modules[_i];
+            if ((module != null) && typeof module.load === 'function') {
+              module.load();
             }
-            if (typeof history.pushState !== 'function') {
-              return;
-            }
-            origin = window.location.origin;
-            $(document.body).addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
-            $(document.body).addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
-            return window.addEventListener("popstate", _this.onPop);
-          });
+          }
+          if (typeof history.pushState !== 'function') {
+            return;
+          }
+          origin = window.location.origin;
+          $(document.body).addEvent("click:relay(a[href^='/']:not([data-ajax-nav=false], [target=_blank]), a[href^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+          $(document.body).addEvent("submit:relay(form[action^='/']:not([data-ajax-nav=false], [target=_blank]), form[action^='" + origin + "']:not([data-ajax-nav=false], [target=_blank]))", _this.onEvent);
+          return window.addEventListener("popstate", _this.onPop);
         });
       }
 
@@ -149,7 +149,7 @@
         var onUnloadError, onUnloadSuccess;
 
         onUnloadSuccess = function() {
-          var module, modules, _i, _len, _results;
+          var modules, _i, _len, _results;
 
           modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           _results = [];
@@ -242,7 +242,7 @@
           _this.content.set('html', state.html);
           _this.activeState = state;
           requirejs(state.requireScripts, function() {
-            var module, modules, _k, _len2, _results;
+            var modules, _k, _len2, _results;
 
             modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
             _results = [];
@@ -295,7 +295,7 @@
       return AjaxNav;
 
     })(EventEmitter);
-    return ajaxNav = new AjaxNav();
+    return ajaxNav = new AjaxNav(module.config());
   });
 
 }).call(this);
