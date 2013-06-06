@@ -76,6 +76,8 @@ module.exports = (grunt) =>
 
 	grunt.registerTask 'commit', ['default', 'git']
 	
+	grunt.registerTask 'travis', 'Travis build tasks', ['default']
+
 	grunt.registerTask 'compile', 'Compile coffeescript and markdown', ['coffee', 'markdown']
 	grunt.registerTask 'watch', 'Watch coffee and markdown files for changes and recompile', () ->
 		## always use force when watching
