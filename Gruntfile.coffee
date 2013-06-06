@@ -62,24 +62,13 @@ module.exports = (grunt) =>
 			open:
 				command: 'open http://localhost:9001/'
 
-		shell:
-			bower_cache:
-				command: 'bower cache-clean'
-				options:
-					stdout: true
-
-			bower:
-				command: 'bower install'
-				options:
-					stdout: true
-
 		
 	grunt.loadNpmTasks 'grunt-contrib-coffee'
 	grunt.loadNpmTasks 'grunt-markdown'
 	grunt.loadNpmTasks 'grunt-regarde'
 	grunt.loadNpmTasks 'grunt-contrib-connect'
 	grunt.loadNpmTasks 'grunt-exec'
-	grunt.loadNpmTasks 'grunt-shell'
+	grunt.loadNpmTasks 'grunt-bower-task'
 	
 	grunt.registerTask 'default', ['bower', 'compile']
 
