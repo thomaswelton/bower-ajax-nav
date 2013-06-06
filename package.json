@@ -2,6 +2,13 @@
     "name": "bower-ajax-nav"
   , "description": "Ajax Navigation component"
   , "version": "0.0.0"
+  , "engines": {
+      "node": ">=0.8"
+  }
+  , "repository": {
+      "type": "git",
+      "url": "https://github.com/thomaswelton/bower-ajax-nav.git"
+  }
   , "scripts": {
     "test": "grunt travis --verbose"
   }
