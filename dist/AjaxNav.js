@@ -247,8 +247,9 @@
               console.log("Loaded stylesheet " + href);
             }
           }
-          _this.content.set('html', state.html);
+          _this.removePageStyles(_this.activeState);
           _this.activeState = state;
+          _this.content.set('html', _this.activeState.html);
           requirejs(state.requireScripts, function() {
             var modules, _k, _len2, _results;
 
@@ -281,7 +282,6 @@
         document.title = state.title;
         return this.unloadRequireScripts(function() {
           return _this.loadScripts(state, function() {
-            _this.removePageStyles(_this.activeState);
             return _this.loadContent(state);
           });
         });

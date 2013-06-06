@@ -174,9 +174,15 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 						@injectStylesheet href
 						console.log "Loaded stylesheet #{href}" 
 
-				## Inject the HTML that may contain <script> dependencies
-				@content.set 'html', state.html
+				## The new page styles have fully loaded
+				## Remove page styles for the "current" active state
+				@removePageStyles @activeState
+
+				## Update the active state
 				@activeState = state
+
+				## Inject the HTML that may contain <script> dependencies
+				@content.set 'html', @activeState.html
 
 				## Load require js modules for this page
 				requirejs state.requireScripts, (modules...) ->
@@ -197,7 +203,6 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 				## Then loadConetent
 				@loadScripts state, () =>
 					## Remove stylesheets for the old page
-					@removePageStyles @activeState
 					@loadContent state
 
 		loadPage: (url) =>
