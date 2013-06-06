@@ -14,14 +14,12 @@
 
   define(['module', 'EventEmitter', 'mootools'], function(module, EventEmitter) {
     var AjaxNav, ajaxNav;
-
     AjaxNav = (function(_super) {
       __extends(AjaxNav, _super);
 
       function AjaxNav(config) {
         var domReadyScripts, roleMain, _ref,
           _this = this;
-
         this.config = config;
         this.loadPage = __bind(this.loadPage, this);
         this.changeState = __bind(this.changeState, this);
@@ -56,7 +54,6 @@
         console.log(domReadyScripts);
         requirejs([domReadyScripts], function() {
           var modules, origin, _i, _len;
-
           modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           for (_i = 0, _len = modules.length; _i < _len; _i++) {
             module = modules[_i];
@@ -77,7 +74,6 @@
       AjaxNav.prototype.getXHR = function() {
         var xhr,
           _this = this;
-
         return xhr = new Request({
           onRequest: function() {
             _this.fireEvent('onRequest');
@@ -85,7 +81,6 @@
           },
           onSuccess: function(responseText) {
             var json, refresh, url;
-
             if (refresh = xhr.getHeader('Refresh')) {
               console.log(refresh);
               url = refresh.split('=')[1];
@@ -126,7 +121,6 @@
 
       AjaxNav.prototype.onClick = function(event) {
         var href, link;
-
         if (event.target.tagName === 'A') {
           link = event.target;
         } else {
@@ -138,7 +132,6 @@
 
       AjaxNav.prototype.onSubmit = function(event) {
         var form;
-
         if (event.target.tagName === 'FORM') {
           form = event.target;
         } else {
@@ -155,10 +148,8 @@
 
       AjaxNav.prototype.unloadRequireScripts = function(cb) {
         var onUnloadError, onUnloadSuccess;
-
         onUnloadSuccess = function() {
           var modules, _i, _len, _results;
-
           modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           _results = [];
           for (_i = 0, _len = modules.length; _i < _len; _i++) {
@@ -183,7 +174,6 @@
 
       AjaxNav.prototype.removePageStyles = function(state) {
         var href, _i, _len, _ref, _results;
-
         if (state.stylesheets != null) {
           _ref = state.stylesheets;
           _results = [];
@@ -198,7 +188,6 @@
 
       AjaxNav.prototype.loadScripts = function(state, cb) {
         var loadScriptsError, loadScriptsSuccess;
-
         if ((state.scripts != null) && state.scripts.length > 0) {
           loadScriptsSuccess = cb;
           loadScriptsError = function(error) {
@@ -213,7 +202,6 @@
 
       AjaxNav.prototype.injectStylesheet = function(href) {
         var stylesheet;
-
         if ($$("link[href*='" + href + "']").length > 0) {
           return;
         }
@@ -227,7 +215,6 @@
       AjaxNav.prototype.loadContent = function(state) {
         var href, loadStyles, _i, _len, _ref,
           _this = this;
-
         loadStyles = [];
         if (state.stylesheets != null) {
           _ref = state.stylesheets;
@@ -238,7 +225,6 @@
         }
         return requirejs(loadStyles, function() {
           var _j, _len1, _ref1;
-
           if (state.stylesheets != null) {
             _ref1 = state.stylesheets;
             for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
@@ -252,7 +238,6 @@
           _this.content.set('html', _this.activeState.html);
           requirejs(state.requireScripts, function() {
             var modules, _k, _len2, _results;
-
             modules = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
             _results = [];
             for (_k = 0, _len2 = modules.length; _k < _len2; _k++) {
@@ -271,7 +256,6 @@
 
       AjaxNav.prototype.changeState = function(state) {
         var _this = this;
-
         if (state == null) {
           state = this.defaultState;
         }

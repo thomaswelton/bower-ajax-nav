@@ -2,6 +2,9 @@ module.exports = (grunt) =>
 	grunt.initConfig
 		pkg: grunt.file.readJSON 'package.json'
 
+		bower:
+			install: {}
+
 		## Compile coffeescript
 		coffee:
 			compile:
@@ -36,7 +39,7 @@ module.exports = (grunt) =>
 					}
 				]
 
-		regarde:
+		watch:
 			markdown:
 				files: 'README.html'
 				tasks: 'markdown'
@@ -59,33 +62,20 @@ module.exports = (grunt) =>
 			open:
 				command: 'open http://localhost:9001/'
 
-		shell:
-			bower_cache:
-				command: 'bower cache-clean'
-				options:
-					stdout: true
-
-			bower:
-				command: 'bower install'
-				options:
-					stdout: true
-
 		
 	grunt.loadNpmTasks 'grunt-contrib-coffee'
 	grunt.loadNpmTasks 'grunt-markdown'
-	grunt.loadNpmTasks 'grunt-regarde'
+	grunt.loadNpmTasks 'grunt-contrib-watch'
 	grunt.loadNpmTasks 'grunt-contrib-connect'
 	grunt.loadNpmTasks 'grunt-exec'
-	grunt.loadNpmTasks 'grunt-shell'
+	grunt.loadNpmTasks 'grunt-bower-task'
 	
-	grunt.registerTask 'default', ['compile']
+	grunt.registerTask 'default', ['bower', 'compile']
 
 	grunt.registerTask 'server', ['exec:server', 'exec:open', 'watch']
 
 	grunt.registerTask 'commit', ['default', 'git']
 	
+	grunt.registerTask 'travis', 'Travis build tasks', ['default']
+
 	grunt.registerTask 'compile', 'Compile coffeescript and markdown', ['coffee', 'markdown']
-	grunt.registerTask 'watch', 'Watch coffee and markdown files for changes and recompile', () ->
-		## always use force when watching
-		grunt.option 'force', true
-		grunt.task.run ['regarde']
