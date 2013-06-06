@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Ajax Nav Demo</title>
-	<script data-main="main" src="../components/requirejs/require.js"></script>
+	<script data-main="main" src="../lib/requirejs/require.js"></script>
 	<script>
 		requirejs.config({
 			baseUrl: "",
@@ -15,9 +15,9 @@
 				}
 			},
 			paths:{
-				'domReady' : '../components/requirejs-domready/domReady',
+				'domReady' : '../lib/requirejs-domready/domReady',
 				'AjaxNav' : '../dist/AjaxNav',
-				'EventEmitter': '../components/EventEmitter/dist/EventEmitter'
+				'EventEmitter': '../lib/EventEmitter/dist/EventEmitter'
 			}
 		});
 	</script>
