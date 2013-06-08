@@ -32,9 +32,8 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 				## Load require js scripts on domready
 				domReadyScripts.unshift @config.requireScripts...
 
-			console.log domReadyScripts
 
-			requirejs [domReadyScripts], (modules...) =>
+			requirejs domReadyScripts, (modules...) =>
 				for module in modules
 					module.load() if module? and typeof module.load is 'function'
 
