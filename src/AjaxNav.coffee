@@ -25,15 +25,7 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 
 			@activeState = @defaultState
 
-
-			domReadyScripts = ['domReady!']
-
-			if @config.requireScripts?.length > 0
-				## Load require js scripts on domready
-				domReadyScripts.unshift @config.requireScripts...
-
-
-			requirejs domReadyScripts, (modules...) =>
+			requirejs @config.requireScripts, (modules...) =>
 				for module in modules
 					module.load() if module? and typeof module.load is 'function'
 
@@ -103,11 +95,7 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 			else 
 				form = event.target.getParent('form')
 
-			return if @xhr.isRunning()
-			
-			@xhr.send
-				url: form.getProperty 'action'
-				data: form
+			@submitForm form
 
 		unloadRequireScripts: (cb) =>
 			## Unload any active scripts that may be running stuff like setIntervals
@@ -173,15 +161,9 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 						@injectStylesheet href
 						console.log "Loaded stylesheet #{href}" 
 
-				## The new page styles have fully loaded
-				## Remove page styles for the "current" active state
-				@removePageStyles @activeState
-
-				## Update the active state
-				@activeState = state
-
 				## Inject the HTML that may contain <script> dependencies
-				@content.set 'html', @activeState.html
+				@content.set 'html', state.html
+				@activeState = state
 
 				## Load require js modules for this page
 				requirejs state.requireScripts, (modules...) ->
@@ -202,7 +184,15 @@ define ['module', 'EventEmitter', 'mootools'], (module, EventEmitter) ->
 				## Then loadConetent
 				@loadScripts state, () =>
 					## Remove stylesheets for the old page
+					@removePageStyles @activeState
 					@loadContent state
+
+		submitForm: (form) =>
+			return if @xhr.isRunning()
+			
+			@xhr.send
+				url: form.getProperty 'action'
+				data: form
 
 		loadPage: (url) =>
 			window.location.reload() if url is window.location.href
