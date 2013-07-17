@@ -7,9 +7,9 @@
     , "require-css" : "0.0.6"
   }
   , "devDependencies": {
-      "requirejs": "git://github.com/jrburke/requirejs"
-    , "requirejs-plugins": "git://github.com/millermedeiros/requirejs-plugins.git"
-    , "requirejs-domready": "git://github.com/thomaswelton/domReady.git"
+      "requirejs": "2.1.*"
+    , "requirejs-domready": "2.0.*"
+    , "requirejs-plugins": "1.0.*"
   }
   , "ignore": [
       "**/.*"
