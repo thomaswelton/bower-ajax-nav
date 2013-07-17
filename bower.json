@@ -3,7 +3,7 @@
   , "version": "0.1.0rc4"
   , "main": ["dist/AjaxNav.js"]
   , "dependencies": {
-      "EventEmitter" : "git://github.com/thomaswelton/bower-event-emitter.git"
+      "EventEmitter" : "git://github.com/thomaswelton/bower-event-emitter.git#0.0.1"
     , "require-css" : "0.0.6"
   }
   , "devDependencies": {
